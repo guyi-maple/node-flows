@@ -8,3 +8,13 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+tech:
+  guyi:
+    web:
+      quick:
+        response:
+          exception:
+            handler:
+              enable: true
+              stack-trace: true

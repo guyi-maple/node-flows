@@ -1,45 +1,48 @@
 package tech.guyi.component.flows.controller;
 
-import lombok.Getter;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import tech.guyi.component.flows.db.entity.Flow;
-import tech.guyi.component.flows.service.FlowService;
+import org.springframework.web.bind.annotation.*;
+import tech.guyi.component.flows.service.FlowEntityService;
+import tech.guyi.component.flows.service.entry.FlowEntry;
 import tech.guyi.web.quick.core.controller.ResponseContent;
 import tech.guyi.web.quick.core.controller.ResponseEntities;
-import tech.guyi.web.quick.service.controller.QuickServiceController;
 
 import javax.annotation.Resource;
 
 /**
- * @author e-Peng.Zhang2
- * @date 2021/3/17
+ * @author guyi
+ * @date 2021/3/19 22:57
  */
 @RestController
 @RequestMapping("flow")
-public class FlowController implements QuickServiceController<Flow,String> {
+public class FlowController {
 
-    @Getter
     @Resource
-    private FlowService service;
+    private FlowEntityService service;
 
-    @GetMapping("/start/{id}")
-    public ResponseEntity<ResponseContent<Boolean>> start(@PathVariable("id") String flowId){
-        try{
-            this.service.start(flowId);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return ResponseEntities.ok(true);
+    @PostMapping
+    public ResponseEntity<ResponseContent<FlowEntry>> create(@RequestBody FlowEntry entry){
+        return ResponseEntities.ok(this.service.save(entry));
     }
 
-    @GetMapping("/stop/{id}")
-    public ResponseEntity<ResponseContent<Boolean>> stop(@PathVariable("id") String flowId){
-        this.service.stop(flowId);
-        return ResponseEntities.ok(true);
+    @GetMapping("{id}")
+    public ResponseEntity<ResponseContent<FlowEntry>> get(@PathVariable("id") String id){
+        return this.service.findById(id)
+                .map(this.service::getEntry)
+                .map(ResponseEntities::ok)
+                .orElseGet(ResponseEntities::_404);
+    }
+
+    @GetMapping("start/{id}")
+    public ResponseEntity<ResponseContent<Boolean>> start(@PathVariable("id") String id){
+        return this.service.findById(id)
+                .map(this.service::getEntry)
+                .map(this.service::getFlow)
+                .map(flow -> {
+                    flow.start(10);
+                    return ResponseEntities.ok(true);
+                })
+                .orElseGet(ResponseEntities::_404);
     }
 
 }
