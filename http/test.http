@@ -3,39 +3,51 @@ POST http://localhost:8080/flow
 Content-Type: application/json
 
 {
-  "name": "测试流程",
-  "start": {
-    "name": "udp",
-    "target": "udp-server",
-    "properties": [
+  "name": "测试流",
+  "detail": "这是一个测试流",
+  "engineType": "js",
+  "params": {},
+  "header": {
+    "name": "UDP服务器",
+    "detail": "测试UDP服务器",
+    "runner": "tech.guyi.component.flows.endpoint.input.UdpRunner",
+    "properties": {
+      "port": 8888
+    },
+    "connections": [
       {
-        "key": "port",
-        "value": "9999"
+        "condition": "true",
+        "target": {
+          "name": "js",
+          "detail": "执行js",
+          "runner": "tech.guyi.component.flows.endpoint.mid.JavaScriptRunner",
+          "properties": {
+            "function": "params.content"
+          },
+          "connections": [
+            {
+              "condition": "true",
+              "target": {
+                "name": "转换器",
+                "detail": "byte数组转字符串",
+                "runner": "tech.guyi.component.flows.endpoint.mid.ByteToStringRunner",
+                "connections": [
+                  {
+                    "condition": "true",
+                    "target": {
+                      "name": "输出",
+                      "detail": "控制台输出",
+                      "runner": "tech.guyi.component.flows.endpoint.output.ConsoleRunner"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
       }
     ]
-  },
-  "end": {
-    "name": "out",
-    "target": "console",
-    "properties": []
-  },
-  "mid": [
-    {
-      "name": "converter",
-      "target": "byte-to-string",
-      "properties": []
-    },
-    {
-      "name": "js",
-      "target": "javascript",
-      "properties": [
-        {
-          "key": "func",
-          "value": "context.resp + ' - JS转换'"
-        }
-      ]
-    }
-  ]
+  }
 }
 
 ###
